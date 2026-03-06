@@ -21,8 +21,6 @@ color:white;
 overflow:hidden;
 }
 
-/* SCALE ENTIRE DASHBOARD */
-
 #dashboard{
 width:100%;
 height:100%;
@@ -70,7 +68,7 @@ margin-bottom:2vh;
 
 #clock{
 font-size:18vh;
-color:#00ff00;
+color:#8aff8a;
 font-family:'Orbitron', monospace;
 letter-spacing:.5vh;
 display:flex;
@@ -90,7 +88,7 @@ animation:blink 1s infinite;
 
 #date{
 font-size:3vh;
-color:#8aff8a;
+color:#00ff00;
 margin-top:1vh;
 }
 
@@ -238,8 +236,6 @@ document.getElementById("date").innerText=date
 setInterval(updateClock,1000)
 updateClock()
 
-/* AQI COLOR */
-
 function getAQIColor(aqi){
 
 if(aqi<=50) return "#00e400"
@@ -250,8 +246,6 @@ if(aqi<=300) return "#8f3f97"
 return "#7e0023"
 
 }
-
-/* MOON */
 
 function getMoonPhase(){
 
@@ -277,8 +271,6 @@ return phases[index]
 
 }
 
-/* WEATHER ICON */
-
 function getWeatherIcon(code){
 
 if(code==0) return "☀️"
@@ -290,8 +282,6 @@ if(code<90) return "⛈"
 return "❄️"
 
 }
-
-/* WEATHER */
 
 async function loadWeather(){
 
