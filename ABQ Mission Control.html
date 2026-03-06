@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Albuquerque Mission Control</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+
+<style>
+
+body{
+background:#000;
+margin:0;
+display:flex;
+align-items:center;
+justify-content:center;
+height:100vh;
+overflow:hidden;
+font-family:Arial;
+}
+
+#dashboard{
+width:1920px;
+height:1080px;
+display:flex;
+flex-direction:column;
+align-items:center;
+justify-content:center;
+color:white;
+position:relative;
+}
+
+#weather{
+color:#1E5BB8;
+font-size:36px;
+margin-bottom:4px;
+}
+
+#updated{
+color:#888;
+font-size:16px;
+margin-bottom:10px;
+}
+
+/* CLOCK */
+
+#clock{
+font-size:200px;
+color:#00ff00;
+font-family:'Orbitron', monospace;
+letter-spacing:8px;
+font-variant-numeric:tabular-nums;
+display:flex;
+align-items:center;
+justify-content:center;
+}
+
+/* BLINKING COLON */
+
+#colon{
+animation:blink 1s infinite;
+}
+
+@keyframes blink{
+0%{opacity:1;}
+50%{opacity:0;}
+100%{opacity:1;}
+}
+
+/* DATE */
+
+#date{
+font-size:30px;
+color:#8aff8a;
+margin-bottom:25px;
+}
+
+/* DETAILS */
+
+#details{
+display:flex;
+gap:40px;
+color:#1E5BB8;
+font-size:18px;
+margin-bottom:20px;
+}
+
+.label{
+color:#aaa;
+font-size:13px;
+margin-bottom:4px;
+}
+
+.value{
+display:flex;
+align-items:center;
+justify-content:center;
+gap:6px;
+}
+
+/* FORECAST */
+
+#forecast{
+display:flex;
+gap:28px;
+color:#1E5BB8;
+font-size:18px;
+margin-bottom:25px;
+}
+
+.day{
+text-align:center;
+}
+
+.high{
+font-size:22px;
+font-weight:bold;
+}
+
+.low{
+opacity:.7;
+}
+
+/* MOON ICON */
+
+.moonIcon{
+font-size:20px;
+}
+
+</style>
+</head>
+
+<body>
+
+<div id="dashboard">
+
+<div id="weather">Loading temperature...</div>
+<div id="updated"></div>
+
+<div id="clock">
+<span id="hour"></span>
+<span id="colon">:</span>
+<span id="minute"></span>
+<span id="ampm"></span>
+</div>
+
+<div id="date"></div>
+
+<div id="details">
+
+<div>
+<div class="label">Wind</div>
+<div class="value" id="wind"></div>
+</div>
+
+<div>
+<div class="label">Feels Like</div>
+<div class="value" id="feels"></div>
+</div>
+
+<div>
+<div class="label">Sunrise</div>
+<div class="value" id="sunrise"></div>
+</div>
+
+<div>
+<div class="label">Sunset</div>
+<div class="value" id="sunset"></div>
+</div>
+
+<div>
+<div class="label">Moon</div>
+<div class="value" id="moon"></div>
+</div>
+
+<div>
+<div class="label">AQI</div>
+<div class="value" id="aqi"></div>
+</div>
+
+</div>
+
+<div id="forecast"></div>
+
+</div>
+
+<script>
+
+/* CLOCK */
+
+function updateClock(){
+
+const now=new Date()
+
+let hours=now.getHours()
+const minutes=now.getMinutes()
+
+let ampm="AM"
+
+if(hours>=12) ampm="PM"
+
+hours=hours%12
+if(hours===0) hours=12
+
+document.getElementById("hour").innerText=hours
+document.getElementById("minute").innerText=minutes.toString().padStart(2,"0")
+document.getElementById("ampm").innerText=" "+ampm
+
+const date=now.toLocaleDateString(undefined,{
+weekday:'long',
+year:'numeric',
+month:'long',
+day:'numeric'
+})
+
+document.getElementById("date").innerText=date
+
+}
+
+setInterval(updateClock,1000)
+updateClock()
+
+
+
+/* ALBUQUERQUE AVERAGE HIGHS */
+
+const avgHigh=[47,52,60,69,79,90,93,91,84,72,58,47]
+
+function tempColor(temp,month){
+
+const avg=avgHigh[month]
+
+if(temp<=avg-15) return "#3aa0ff"
+if(temp<=avg-8) return "#6bb8ff"
+if(temp<=avg+5) return "#ffffff"
+if(temp<=avg+12) return "#ffb347"
+return "#ff4c4c"
+
+}
+
+
+
+/* MOON PHASE */
+
+function getMoonPhase(){
+
+const lp=2551443
+const now=new Date()
+const new_moon=new Date(1970,0,7,20,35,0)
+
+const phase=((now.getTime()-new_moon.getTime())/1000)%lp
+const index=Math.floor(phase/(lp/8))
+
+const phases=[
+["🌑","New Moon"],
+["🌒","Waxing Crescent"],
+["🌓","First Quarter"],
+["🌔","Waxing Gibbous"],
+["🌕","Full Moon"],
+["🌖","Waning Gibbous"],
+["🌗","Last Quarter"],
+["🌘","Waning Crescent"]
+]
+
+return phases[index]
+
+}
+
+
+
+/* WEATHER ICONS */
+
+function getWeatherIcon(code){
+
+if(code==0) return "☀️"
+if(code<3) return "⛅"
+if(code<50) return "☁️"
+if(code<70) return "🌧"
+if(code<80) return "🌦"
+if(code<90) return "⛈"
+return "❄️"
+
+}
+
+
+
+/* AQI COLOR SCALE */
+
+function getAQIColor(aqi){
+
+if(aqi<=50) return "#00e400"
+if(aqi<=100) return "#ffff00"
+if(aqi<=150) return "#ff7e00"
+if(aqi<=200) return "#ff0000"
+if(aqi<=300) return "#8f3f97"
+return "#7e0023"
+
+}
+
+
+
+/* WEATHER */
+
+async function loadWeather(){
+
+const weatherURL="https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&current_weather=true&hourly=apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto"
+
+const airURL="https://air-quality-api.open-meteo.com/v1/air-quality?latitude=35.0844&longitude=-106.6504&current=us_aqi"
+
+const weatherRes=await fetch(weatherURL)
+const weatherData=await weatherRes.json()
+
+const airRes=await fetch(airURL)
+const airData=await airRes.json()
+
+document.getElementById("weather").innerText="Albuquerque "+Math.round(weatherData.current_weather.temperature)+"°F"
+
+document.getElementById("wind").innerText=Math.round(weatherData.current_weather.windspeed)+" mph"
+
+document.getElementById("feels").innerText=Math.round(weatherData.hourly.apparent_temperature[0])+"°F"
+
+document.getElementById("sunrise").innerText=
+new Date(weatherData.daily.sunrise[0]).toLocaleTimeString([],{
+hour:'numeric',
+minute:'2-digit'
+})
+
+document.getElementById("sunset").innerText=
+new Date(weatherData.daily.sunset[0]).toLocaleTimeString([],{
+hour:'numeric',
+minute:'2-digit'
+})
+
+const aqi=airData.current.us_aqi
+const aqiEl=document.getElementById("aqi")
+
+aqiEl.innerText=aqi
+aqiEl.style.color=getAQIColor(aqi)
+
+/* UPDATED TIME */
+
+const now=new Date()
+
+document.getElementById("updated").innerText=
+"Updated "+now.toLocaleTimeString([],{
+hour:'numeric',
+minute:'2-digit'
+})
+
+/* MOON */
+
+const moon=getMoonPhase()
+
+document.getElementById("moon").innerHTML=
+"<span class='moonIcon'>"+moon[0]+"</span>"+moon[1]
+
+/* FORECAST */
+
+let forecastHTML=""
+
+for(let i=1;i<7;i++){
+
+let date=new Date(weatherData.daily.time[i])
+let day=date.toLocaleDateString(undefined,{weekday:'short'})
+let icon=getWeatherIcon(weatherData.daily.weathercode[i])
+
+let high=Math.round(weatherData.daily.temperature_2m_max[i])
+let low=Math.round(weatherData.daily.temperature_2m_min[i])
+
+let color=tempColor(high,date.getMonth())
+
+forecastHTML+=`
+<div class="day">
+<div>${day}</div>
+<div style="font-size:28px">${icon}</div>
+<div class="high" style="color:${color}">${high}°</div>
+<div class="low">${low}°</div>
+</div>
+`
+
+}
+
+document.getElementById("forecast").innerHTML=forecastHTML
+
+}
+
+loadWeather()
+
+setInterval(loadWeather,120000)
+
+setInterval(()=>location.reload(),1800000)
+
+</script>
+
+</body>
+</html>
