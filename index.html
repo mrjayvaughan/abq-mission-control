@@ -12,260 +12,160 @@ font-family:Arial;
 text-align:center;
 margin:0;
 overflow:hidden;
-transition: transform 1s linear;
 }
 
-#container{
-display:flex;
-flex-direction:column;
-justify-content:flex-start;
-height:100vh;
+/* SIDE PANELS */
+.side{
+position:absolute;
+width:22%;
+text-align:center;
 }
+.topSide{ top:8%; }
+.bottomSide{ bottom:10%; }
+#leftTop{ left:2%; }
+#rightTop{ right:2%; }
+#leftBottom{ left:2%; }
+#rightBottom{ right:2%; }
 
-/* TOP */
-#top{
-margin-top:5px;
-}
+.label{ font-size:26px;color:#aaa;margin-bottom:8px; }
+.icon{ font-size:60px;margin-bottom:8px; }
+.temp,.time{ font-size:36px; }
 
-#city{
-color:#4da6ff;
-font-size:60px;
+/* CENTER */
+#center{
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(-50%,-50%);
+width:100%;
 }
-
-#temp{
-font-size:85px;
-margin-bottom:0;
-}
-
-#updated{
-font-size:18px;
-color:#888;
-margin-bottom:-10px;
-}
-
-/* MIDDLE */
-#middle{
-flex-grow:0;
-margin-top:0;
-}
-
-#clock{
-font-size:190px;
-color:#39ff14;
-}
-
-#date{
-font-size:40px;
-margin-top:-20px;
-}
-
-/* BOTTOM */
-#bottom{
-margin-top:-10px;
-margin-bottom:5px;
-}
-
-#forecastUpdated{
-font-size:18px;
-color:#777;
-margin-top:6px;   /* slight downward nudge */
-margin-bottom:5px;
-}
-
-#forecast{
-display:flex;
-justify-content:center;
-align-items:center;
-}
-
-/* FORECAST */
-.day{
-display:inline-block;
-width:180px;
-margin:0 20px;
-}
-
-.dayname{
-font-size:32px;
-margin-bottom:10px;
-}
-
-.high{
-color:#ff4444;
-font-size:42px;
-}
-
-.low{
-color:#66aaff;
-font-size:34px;
-}
+#city{ color:#4da6ff;font-size:70px; }
+#temp{ font-size:100px; }
+#updated{ font-size:20px;color:#888;margin-bottom:10px; }
+#clock{ font-size:220px;color:#39ff14; }
+#date{ font-size:50px;margin-top:-20px; }
 </style>
 </head>
 
-<body onclick="goFullscreen()">
+<body>
 
-<div id="container">
+<!-- WEATHER -->
+<div id="leftTop" class="side topSide">
+<div class="label">Today</div>
+<div id="todayIcon" class="icon">--</div>
+<div id="todayTemp" class="temp">--</div>
+</div>
 
-<div id="top">
+<div id="rightTop" class="side topSide">
+<div class="label">Tomorrow</div>
+<div id="tomorrowIcon" class="icon">--</div>
+<div id="tomorrowTemp" class="temp">--</div>
+</div>
+
+<!-- SUN -->
+<div id="leftBottom" class="side bottomSide">
+<div class="label">Sunrise</div>
+<div class="icon">🌅</div>
+<div id="sunrise" class="time">--:--</div>
+</div>
+
+<div id="rightBottom" class="side bottomSide">
+<div class="label">Sunset</div>
+<div class="icon">🌇</div>
+<div id="sunset" class="time">--:--</div>
+</div>
+
+<!-- CENTER -->
+<div id="center">
 <div id="city">Albuquerque</div>
 <div id="temp">--°F</div>
 <div id="updated"></div>
-</div>
-
-<div id="middle">
 <div id="clock">--:--</div>
 <div id="date"></div>
 </div>
 
-<div id="bottom">
-<div id="forecastUpdated"></div>
-<div id="forecast"></div>
-</div>
-
-</div>
-
 <script>
 
-/* FULLSCREEN */
-function goFullscreen(){
-  var el = document.documentElement;
-  if(el.requestFullscreen){ el.requestFullscreen(); }
-  else if(el.webkitRequestFullscreen){ el.webkitRequestFullscreen(); }
+function formatTime(d){
+  var h=d.getHours(), m=d.getMinutes(), a="AM";
+  if(h>=12){a="PM";}
+  if(h>12){h-=12;}
+  if(h==0){h=12;}
+  if(m<10){m="0"+m;}
+  return h+":"+m+" "+a;
 }
-
-/* KEEP AWAKE */
-setInterval(function(){ window.scrollTo(0,1); },30000);
 
 /* CLOCK */
-var showColon = true;
+setInterval(function(){
+  var n=new Date();
+  document.getElementById("clock").innerHTML=formatTime(n);
+  document.getElementById("date").innerHTML=n.toDateString();
+},1000);
 
-function updateClock(){
-  var now=new Date();
-  var h=now.getHours();
-  var m=now.getMinutes();
-  var ampm="AM";
-
-  if(h>=12){ampm="PM";}
-  if(h>12){h=h-12;}
-  if(h==0){h=12;}
-  if(m<10){m="0"+m;}
-
-  var colon = showColon ? ":" : " ";
-  showColon = !showColon;
-
-  document.getElementById("clock").innerHTML =
-    h + colon + m + " " + ampm;
-
-  document.getElementById("date").innerHTML =
-    now.toDateString();
+/* ICON */
+function getIcon(c){
+  if(c==0)return"☀️";
+  if(c<=3)return"⛅";
+  if(c<=48)return"☁️";
+  if(c<=67)return"🌧️";
+  return"⛈️";
 }
 
-setInterval(updateClock,1000);
-updateClock();
-
-/* FORMAT TIME */
-function formatTime(d){
-  var h=d.getHours();
-  var m=d.getMinutes();
-  var ampm="AM";
-  if(h>=12){ampm="PM";}
-  if(h>12){h=h-12;}
-  if(h==0){h=12;}
-  if(m<10){m="0"+m;}
-  return h+":"+m+" "+ampm;
+/* COLOR */
+function getColor(t){
+  if(t>=90)return"#ff4444";
+  if(t>=70)return"#ffaa00";
+  if(t>=50)return"#66ccff";
+  return"#3399ff";
+}
+function fmt(h,l){
+  return "<span style='color:"+getColor(h)+"'>"+h+"°</span> / "+
+         "<span style='color:"+getColor(l)+"'>"+l+"°</span>";
 }
 
-/* TEMP */
+/* CURRENT TEMP (FAST) */
 function updateCurrentTemp(){
-  var xhr=new XMLHttpRequest();
-
-  xhr.open(
-    "GET",
-    "https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&current_weather=true&temperature_unit=fahrenheit&timezone=auto",
-    true
-  );
-
-  xhr.onload=function(){
-    if(xhr.status===200){
-      var data=JSON.parse(xhr.responseText);
-      document.getElementById("temp").innerHTML =
-        Math.round(data.current_weather.temperature)+"°F";
-      document.getElementById("updated").innerHTML =
-        "Updated " + formatTime(new Date());
-    }
-  };
-
-  xhr.send();
+fetch("https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&current_weather=true&temperature_unit=fahrenheit&timezone=auto")
+.then(r=>r.json())
+.then(d=>{
+  document.getElementById("temp").innerHTML=Math.round(d.current_weather.temperature)+"°F";
+  document.getElementById("updated").innerHTML="Updated "+formatTime(new Date());
+});
 }
 
-/* FORECAST */
-function updateForecast(){
-  var xhr=new XMLHttpRequest();
-
-  xhr.open(
-    "GET",
-    "https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto",
-    true
+/* FORECAST + SUN (SLOW) */
+function updateMeta(){
+fetch("https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&temperature_unit=fahrenheit&timezone=auto")
+.then(r=>r.json())
+.then(d=>{
+  document.getElementById("todayIcon").innerHTML=getIcon(d.daily.weathercode[0]);
+  document.getElementById("todayTemp").innerHTML=fmt(
+    Math.round(d.daily.temperature_2m_max[0]),
+    Math.round(d.daily.temperature_2m_min[0])
   );
 
-  xhr.onload=function(){
-    if(xhr.status===200){
-      var data=JSON.parse(xhr.responseText);
+  document.getElementById("tomorrowIcon").innerHTML=getIcon(d.daily.weathercode[1]);
+  document.getElementById("tomorrowTemp").innerHTML=fmt(
+    Math.round(d.daily.temperature_2m_max[1]),
+    Math.round(d.daily.temperature_2m_min[1])
+  );
 
-      var days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-      var out="";
-
-      var today = new Date();
-      var year = today.getFullYear();
-      var month = ("0" + (today.getMonth() + 1)).slice(-2);
-      var dayNum = ("0" + today.getDate()).slice(-2);
-      var todayStr = year + "-" + month + "-" + dayNum;
-
-      var startIndex=0;
-
-      for(var i=0;i<data.daily.time.length;i++){
-        if(data.daily.time[i]===todayStr){
-          startIndex=i+1;
-          break;
-        }
-      }
-
-      for(var i=startIndex;i<startIndex+5;i++){
-        var d=new Date(data.daily.time[i]);
-        var day=days[d.getDay()];
-
-        out+="<div class='day'>";
-        out+="<div class='dayname'>"+day+"</div>";
-        out+="<div class='high'>"+
-        Math.round(data.daily.temperature_2m_max[i])+"°</div>";
-        out+="<div class='low'>"+
-        Math.round(data.daily.temperature_2m_min[i])+"°</div>";
-        out+="</div>";
-      }
-
-      document.getElementById("forecast").innerHTML=out;
-      document.getElementById("forecastUpdated").innerHTML =
-        "Updated " + formatTime(new Date());
-    }
-  };
-
-  xhr.send();
+  document.getElementById("sunrise").innerHTML=formatTime(new Date(d.daily.sunrise[0]));
+  document.getElementById("sunset").innerHTML=formatTime(new Date(d.daily.sunset[0]));
+});
 }
 
 /* INIT */
 updateCurrentTemp();
-updateForecast();
+updateMeta();
 
-setInterval(updateCurrentTemp,120000);
-setInterval(updateForecast,14400000);
+/* INTERVALS */
+setInterval(updateCurrentTemp,300000);   // 5 min
 
-/* BURN IN SHIFT */
-var shift=0;
-setInterval(function(){
-  shift=(shift+1)%10;
-  document.body.style.transform =
-    "translate("+shift+"px,"+shift+"px)";
-},60000);
+setTimeout(function(){
+  updateMeta();
+  setInterval(updateMeta,3600000);      // 1 hour
+},15000); // stagger 15s
 
 </script>
 
