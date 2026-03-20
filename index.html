@@ -1,363 +1,265 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta charset="UTF-8">
-<title>Albuquerque Mission Control</title>
-
-<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+<meta charset="utf-8">
+<title>ABQ Mission Clock</title>
 
 <style>
-
 body{
-background:#000;
-margin:0;
-height:100vh;
-width:100vw;
-display:flex;
-align-items:center;
-justify-content:center;
-font-family:Arial;
+background:black;
 color:white;
-overflow:hidden;
-}
-
-#dashboard{
-width:100%;
-height:100%;
-display:flex;
-transform:scale(.9);
-transform-origin:center;
-}
-
-/* LEFT PANEL */
-
-#left{
-flex:3;
-display:flex;
-flex-direction:column;
-align-items:center;
-justify-content:center;
+font-family:Arial;
 text-align:center;
+margin:0;
+overflow:hidden;
+transition: transform 1s linear;
 }
 
-/* RIGHT PANEL */
-
-#right{
-flex:2;
+#container{
 display:flex;
 flex-direction:column;
-justify-content:center;
-align-items:center;
+justify-content:space-between;
+height:100vh;
 }
 
-/* WEATHER */
+#top{
+margin-top:10px;
+}
 
-#weather{
-color:#1E5BB8;
-font-size:3vh;
-margin-bottom:.5vh;
+#city{
+color:#4da6ff;
+font-size:60px;
+}
+
+#temp{
+font-size:85px;
+margin-bottom:0;
 }
 
 #updated{
+font-size:20px;
 color:#888;
-font-size:1.5vh;
-margin-bottom:2vh;
 }
 
-/* CLOCK */
+#middle{
+flex-grow:1;
+display:flex;
+flex-direction:column;
+justify-content:flex-start;
+margin-top:20px;
+}
 
 #clock{
-font-size:18vh;
-color:#8aff8a;
-font-family:'Orbitron', monospace;
-letter-spacing:.5vh;
-display:flex;
+font-size:190px;
+color:#39ff14;
 }
-
-#colon{
-animation:blink 1s infinite;
-}
-
-@keyframes blink{
-0%{opacity:1;}
-50%{opacity:0;}
-100%{opacity:1;}
-}
-
-/* DATE */
 
 #date{
-font-size:3vh;
-color:#00ff00;
-margin-top:1vh;
+font-size:40px;
 }
 
-/* DETAILS */
-
-#details{
-display:grid;
-grid-template-columns:repeat(3,10vw);
-gap:2vh;
-text-align:center;
-margin-bottom:4vh;
+#bottom{
+margin-bottom:20px;
 }
 
-.label{
-color:#aaa;
-font-size:1.5vh;
+#forecastUpdated{
+font-size:18px;
+color:#777;
+margin-bottom:5px;
 }
-
-.value{
-font-size:2vh;
-}
-
-/* FORECAST */
 
 #forecast{
-display:flex;
-gap:2vw;
+margin-top:10px;
 }
 
+/* FORECAST DAY BLOCK */
 .day{
-text-align:center;
+display:inline-block;
+width:150px;
+margin:0 15px;
+}
+
+.dayname{
+font-size:28px;
+margin-bottom:8px;
 }
 
 .high{
-font-size:2.5vh;
-font-weight:bold;
+color:#ff4444;
+font-size:34px;
 }
 
 .low{
-opacity:.7;
+color:#66aaff;
+font-size:28px;
 }
-
-.moonIcon{
-font-size:2vh;
-}
-
 </style>
 </head>
 
-<body>
+<body onclick="goFullscreen()">
 
-<div id="dashboard">
+<div id="container">
 
-<div id="left">
-
-<div id="weather">Loading temperature...</div>
+<div id="top">
+<div id="city">Albuquerque</div>
+<div id="temp">--°F</div>
 <div id="updated"></div>
-
-<div id="clock">
-<span id="hour"></span>
-<span id="colon">:</span>
-<span id="minute"></span>
-<span id="ampm"></span>
 </div>
 
+<div id="middle">
+<div id="clock">--:--</div>
 <div id="date"></div>
-
 </div>
 
-<div id="right">
-
-<div id="details">
-
-<div>
-<div class="label">Wind</div>
-<div class="value" id="wind"></div>
-</div>
-
-<div>
-<div class="label">Feels Like</div>
-<div class="value" id="feels"></div>
-</div>
-
-<div>
-<div class="label">AQI</div>
-<div class="value" id="aqi"></div>
-</div>
-
-<div>
-<div class="label">Sunrise</div>
-<div class="value" id="sunrise"></div>
-</div>
-
-<div>
-<div class="label">Sunset</div>
-<div class="value" id="sunset"></div>
-</div>
-
-<div>
-<div class="label">Moon</div>
-<div class="value" id="moon"></div>
-</div>
-
-</div>
-
+<div id="bottom">
+<div id="forecastUpdated"></div>
 <div id="forecast"></div>
-
 </div>
 
 </div>
 
 <script>
 
+/* FULLSCREEN */
+function goFullscreen(){
+  var el = document.documentElement;
+  if(el.requestFullscreen){ el.requestFullscreen(); }
+  else if(el.webkitRequestFullscreen){ el.webkitRequestFullscreen(); }
+}
+
+/* KEEP AWAKE */
+setInterval(function(){ window.scrollTo(0,1); },30000);
+
 /* CLOCK */
+var showColon = true;
 
 function updateClock(){
+  var now=new Date();
+  var h=now.getHours();
+  var m=now.getMinutes();
+  var ampm="AM";
 
-const now=new Date()
+  if(h>=12){ampm="PM";}
+  if(h>12){h=h-12;}
+  if(h==0){h=12;}
+  if(m<10){m="0"+m;}
 
-let hours=now.getHours()
-const minutes=now.getMinutes()
+  var colon = showColon ? ":" : " ";
+  showColon = !showColon;
 
-let ampm="AM"
+  document.getElementById("clock").innerHTML =
+    h + colon + m + " " + ampm;
 
-if(hours>=12) ampm="PM"
-
-hours=hours%12
-if(hours===0) hours=12
-
-document.getElementById("hour").innerText=hours
-document.getElementById("minute").innerText=minutes.toString().padStart(2,"0")
-document.getElementById("ampm").innerText=" "+ampm
-
-const date=now.toLocaleDateString(undefined,{
-weekday:'long',
-year:'numeric',
-month:'long',
-day:'numeric'
-})
-
-document.getElementById("date").innerText=date
-
+  document.getElementById("date").innerHTML =
+    now.toDateString();
 }
 
-setInterval(updateClock,1000)
-updateClock()
+setInterval(updateClock,1000);
+updateClock();
 
-function getAQIColor(aqi){
-
-if(aqi<=50) return "#00e400"
-if(aqi<=100) return "#ffff00"
-if(aqi<=150) return "#ff7e00"
-if(aqi<=200) return "#ff0000"
-if(aqi<=300) return "#8f3f97"
-return "#7e0023"
-
+/* FORMAT TIME */
+function formatTime(d){
+  var h=d.getHours();
+  var m=d.getMinutes();
+  var ampm="AM";
+  if(h>=12){ampm="PM";}
+  if(h>12){h=h-12;}
+  if(h==0){h=12;}
+  if(m<10){m="0"+m;}
+  return h+":"+m+" "+ampm;
 }
 
-function getMoonPhase(){
+/* TEMP */
+function updateCurrentTemp(){
+  var xhr=new XMLHttpRequest();
 
-const lp=2551443
-const now=new Date()
-const new_moon=new Date(1970,0,7,20,35,0)
+  xhr.open(
+    "GET",
+    "https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&current_weather=true&temperature_unit=fahrenheit&timezone=auto",
+    true
+  );
 
-const phase=((now.getTime()-new_moon.getTime())/1000)%lp
-const index=Math.floor(phase/(lp/8))
+  xhr.onload=function(){
+    if(xhr.status===200){
+      var data=JSON.parse(xhr.responseText);
+      document.getElementById("temp").innerHTML =
+        Math.round(data.current_weather.temperature)+"°F";
+      document.getElementById("updated").innerHTML =
+        "Updated " + formatTime(new Date());
+    }
+  };
 
-const phases=[
-["🌑","New Moon"],
-["🌒","Waxing Crescent"],
-["🌓","First Quarter"],
-["🌔","Waxing Gibbous"],
-["🌕","Full Moon"],
-["🌖","Waning Gibbous"],
-["🌗","Last Quarter"],
-["🌘","Waning Crescent"]
-]
-
-return phases[index]
-
+  xhr.send();
 }
 
-function getWeatherIcon(code){
+/* FORECAST */
+function updateForecast(){
+  var xhr=new XMLHttpRequest();
 
-if(code==0) return "☀️"
-if(code<3) return "⛅"
-if(code<50) return "☁️"
-if(code<70) return "🌧"
-if(code<80) return "🌦"
-if(code<90) return "⛈"
-return "❄️"
+  xhr.open(
+    "GET",
+    "https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&daily=temperature_2m_max,temperature_2m_min&temperature_unit=fahrenheit&timezone=auto",
+    true
+  );
 
+  xhr.onload=function(){
+    if(xhr.status===200){
+      var data=JSON.parse(xhr.responseText);
+
+      var days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+      var out="";
+
+      var today = new Date();
+      var year = today.getFullYear();
+      var month = ("0" + (today.getMonth() + 1)).slice(-2);
+      var dayNum = ("0" + today.getDate()).slice(-2);
+      var todayStr = year + "-" + month + "-" + dayNum;
+
+      var startIndex=0;
+
+      for(var i=0;i<data.daily.time.length;i++){
+        if(data.daily.time[i]===todayStr){
+          startIndex=i+1;
+          break;
+        }
+      }
+
+      for(var i=startIndex;i<startIndex+5;i++){
+        var d=new Date(data.daily.time[i]);
+        var day=days[d.getDay()];
+
+        out+="<div class='day'>";
+        out+="<div class='dayname'>"+day+"</div>";
+        out+="<div class='high'>"+
+        Math.round(data.daily.temperature_2m_max[i])+"°</div>";
+        out+="<div class='low'>"+
+        Math.round(data.daily.temperature_2m_min[i])+"°</div>";
+        out+="</div>";
+      }
+
+      document.getElementById("forecast").innerHTML=out;
+      document.getElementById("forecastUpdated").innerHTML =
+        "Updated " + formatTime(new Date());
+    }
+  };
+
+  xhr.send();
 }
 
-async function loadWeather(){
+/* INIT */
+updateCurrentTemp();
+updateForecast();
 
-const weatherURL="https://api.open-meteo.com/v1/forecast?latitude=35.0844&longitude=-106.6504&current_weather=true&hourly=apparent_temperature&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&temperature_unit=fahrenheit&windspeed_unit=mph&timezone=auto"
+setInterval(updateCurrentTemp,120000);
+setInterval(updateForecast,14400000);
 
-const airURL="https://air-quality-api.open-meteo.com/v1/air-quality?latitude=35.0844&longitude=-106.6504&current=us_aqi"
-
-const weatherRes=await fetch(weatherURL)
-const weatherData=await weatherRes.json()
-
-const airRes=await fetch(airURL)
-const airData=await airRes.json()
-
-document.getElementById("weather").innerText="Albuquerque "+Math.round(weatherData.current_weather.temperature)+"°F"
-
-document.getElementById("wind").innerText=Math.round(weatherData.current_weather.windspeed)+" mph"
-
-document.getElementById("feels").innerText=Math.round(weatherData.hourly.apparent_temperature[0])+"°F"
-
-document.getElementById("sunrise").innerText=new Date(weatherData.daily.sunrise[0]).toLocaleTimeString([],{
-hour:'numeric',
-minute:'2-digit'
-})
-
-document.getElementById("sunset").innerText=new Date(weatherData.daily.sunset[0]).toLocaleTimeString([],{
-hour:'numeric',
-minute:'2-digit'
-})
-
-const aqi=airData.current.us_aqi
-const aqiEl=document.getElementById("aqi")
-
-aqiEl.innerText=aqi
-aqiEl.style.color=getAQIColor(aqi)
-
-const now=new Date()
-
-document.getElementById("updated").innerText=
-"Updated "+now.toLocaleTimeString([],{
-hour:'numeric',
-minute:'2-digit'
-})
-
-const moon=getMoonPhase()
-
-document.getElementById("moon").innerHTML=moon[0]+" "+moon[1]
-
-let forecastHTML=""
-
-for(let i=1;i<7;i++){
-
-let date=new Date(weatherData.daily.time[i])
-let day=date.toLocaleDateString(undefined,{weekday:'short'})
-let icon=getWeatherIcon(weatherData.daily.weathercode[i])
-
-let high=Math.round(weatherData.daily.temperature_2m_max[i])
-let low=Math.round(weatherData.daily.temperature_2m_min[i])
-
-forecastHTML+=`
-<div class="day">
-<div>${day}</div>
-<div style="font-size:3vh">${icon}</div>
-<div class="high">${high}°</div>
-<div class="low">${low}°</div>
-</div>
-`
-
-}
-
-document.getElementById("forecast").innerHTML=forecastHTML
-
-}
-
-loadWeather()
-setInterval(loadWeather,120000)
-setInterval(()=>location.reload(),1800000)
+/* BURN IN SHIFT */
+var shift=0;
+setInterval(function(){
+  shift=(shift+1)%10;
+  document.body.style.transform =
+    "translate("+shift+"px,"+shift+"px)";
+},60000);
 
 </script>
 
