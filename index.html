@@ -18,12 +18,13 @@ transition: transform 1s linear;
 #container{
 display:flex;
 flex-direction:column;
-justify-content:space-between;
+justify-content:flex-start;
 height:100vh;
 }
 
+/* TOP */
 #top{
-margin-top:10px;
+margin-top:5px;
 }
 
 #city{
@@ -37,16 +38,15 @@ margin-bottom:0;
 }
 
 #updated{
-font-size:20px;
+font-size:18px;
 color:#888;
+margin-bottom:-10px;
 }
 
+/* MIDDLE */
 #middle{
-flex-grow:1;
-display:flex;
-flex-direction:column;
-justify-content:flex-start;
-margin-top:20px;
+flex-grow:0;
+margin-top:0;
 }
 
 #clock{
@@ -56,42 +56,48 @@ color:#39ff14;
 
 #date{
 font-size:40px;
+margin-top:-20px;
 }
 
+/* BOTTOM */
 #bottom{
-margin-bottom:20px;
+margin-top:-10px;
+margin-bottom:5px;
 }
 
 #forecastUpdated{
 font-size:18px;
 color:#777;
+margin-top:6px;   /* slight downward nudge */
 margin-bottom:5px;
 }
 
 #forecast{
-margin-top:10px;
+display:flex;
+justify-content:center;
+align-items:center;
 }
 
-/* FORECAST DAY BLOCK */
+/* FORECAST */
 .day{
 display:inline-block;
-width:150px;
-margin:0 15px;
+width:180px;
+margin:0 20px;
 }
 
 .dayname{
-font-size:28px;
-margin-bottom:8px;
+font-size:32px;
+margin-bottom:10px;
 }
 
 .high{
 color:#ff4444;
-font-size:34px;
+font-size:42px;
 }
 
 .low{
 color:#66aaff;
-font-size:28px;
+font-size:34px;
 }
 </style>
 </head>
